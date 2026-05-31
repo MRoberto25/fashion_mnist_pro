@@ -1,3 +1,4 @@
+%%writefile 02_train_pipeline.py
 import os
 import numpy as np
 import tensorflow as tf
@@ -20,17 +21,18 @@ class ResidualBlock(layers.Layer):
     def call(self, inputs):
         x = self.conv1(inputs)
         x = self.bn1(x)
-        x = tf.nn.relu(x)
+        x = layers.ReLU()(x) # FIX: Folosim layers.ReLU() in loc de tf.nn.relu()
         x = self.conv2(x)
         x = self.bn2(x)
         shortcut = self.shortcut(inputs)
-        return tf.nn.relu(layers.add([x, shortcut]))
+        x = layers.add([x, shortcut])
+        return layers.ReLU()(x) # FIX: Folosim layers.ReLU()
 
 def build_advanced_resnet(input_shape=(28, 28, 1), num_classes=10):
     inputs = layers.Input(shape=input_shape)
     x = layers.Conv2D(32, 3, padding="same", use_bias=False)(inputs)
     x = layers.BatchNormalization()(x)
-    x = tf.nn.relu(x)
+    x = layers.ReLU()(x) # FIX: Folosim layers.ReLU()
     
     x = ResidualBlock(32)(x)
     x = ResidualBlock(64, stride=2)(x)
@@ -61,7 +63,6 @@ def run_training_pipeline():
     ]
     
     print("3. Începe antrenarea modelului...")
-    # Setează epochs=10-20 pentru versiunea finală. Acum e setat la 3 pentru teste rapide.
     model.fit(X_train, y_train, batch_size=128, epochs=3, validation_split=0.2, callbacks=callbacks)
     
     print("4. Se salvează modelul în producție...")
