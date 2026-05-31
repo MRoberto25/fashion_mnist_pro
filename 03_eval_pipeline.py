@@ -1,3 +1,4 @@
+%%writefile 03_eval_pipeline.py
 import os
 import numpy as np
 import tensorflow as tf
@@ -9,19 +10,28 @@ from sklearn.metrics import classification_report, ConfusionMatrixDisplay
 class ResidualBlock(layers.Layer):
     def __init__(self, filters, stride=1, **kwargs):
         super(ResidualBlock, self).__init__(**kwargs)
+        self.stride = stride
         self.conv1 = layers.Conv2D(filters, 3, strides=stride, padding="same", use_bias=False)
         self.bn1 = layers.BatchNormalization()
         self.conv2 = layers.Conv2D(filters, 3, strides=1, padding="same", use_bias=False)
         self.bn2 = layers.BatchNormalization()
-        self.shortcut = models.Sequential()
-        if stride != 1:
-            self.shortcut.add(layers.Conv2D(filters, 1, strides=stride, use_bias=False))
-            self.shortcut.add(layers.BatchNormalization())
-            
+        
+        if self.stride != 1:
+            self.shortcut_conv = layers.Conv2D(filters, 1, strides=stride, use_bias=False)
+            self.shortcut_bn = layers.BatchNormalization()
+
     def call(self, inputs):
-        x = layers.ReLU()(self.bn1(self.conv1(inputs))) # FIX aplicat aici
-        x = layers.add([self.bn2(self.conv2(x)), self.shortcut(inputs)])
-        return layers.ReLU()(x) # FIX aplicat aici
+        x = layers.ReLU()(self.bn1(self.conv1(inputs)))
+        x_processed = self.bn2(self.conv2(x))
+        
+        if self.stride != 1:
+            shortcut = self.shortcut_conv(inputs)
+            shortcut = self.shortcut_bn(shortcut)
+        else:
+            shortcut = inputs
+            
+        x = layers.add([x_processed, shortcut])
+        return layers.ReLU()(x)
 
 def generate_grad_cam(img_array, model, last_conv_layer_name):
     grad_model = models.Model([model.inputs], [model.get_layer(last_conv_layer_name).output, model.output])
