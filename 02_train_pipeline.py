@@ -1,4 +1,3 @@
-%%writefile 02_train_pipeline.py
 import os
 import numpy as np
 import tensorflow as tf
