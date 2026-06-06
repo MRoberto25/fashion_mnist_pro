@@ -9,243 +9,307 @@
 
         body {
             font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            background: #0f0f23;
             min-height: 100vh;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            padding: 20px;
+            color: #e0e0e0;
+            padding: 24px 16px;
         }
 
-        .container {
-            background: white;
-            border-radius: 20px;
-            padding: 40px;
-            max-width: 700px;
-            width: 100%;
-            box-shadow: 0 20px 60px rgba(0,0,0,0.3);
-        }
-
-        .header {
+        .page-header {
             text-align: center;
-            margin-bottom: 30px;
+            margin-bottom: 28px;
         }
+        .page-header h1 { font-size: 2rem; color: #fff; margin-bottom: 6px; }
+        .page-header p { color: #888; font-size: 0.92rem; }
 
-        .header h1 {
-            font-size: 2rem;
-            color: #333;
-            margin-bottom: 8px;
-        }
-
-        .header p {
-            color: #888;
-            font-size: 0.95rem;
-        }
-
-        .model-status {
-            text-align: center;
-            padding: 10px 20px;
-            border-radius: 30px;
-            font-size: 0.85rem;
-            font-weight: 600;
-            margin-bottom: 25px;
+        .model-badge {
             display: inline-block;
-            width: 100%;
+            padding: 6px 16px;
+            border-radius: 20px;
+            font-size: 0.8rem;
+            font-weight: 600;
+            margin-top: 10px;
+        }
+        .model-badge.ready { background: #0d3d22; color: #27ae60; border: 1px solid #27ae60; }
+        .model-badge.not-ready { background: #3d0d0d; color: #e74c3c; border: 1px solid #e74c3c; }
+
+        .layout {
+            display: grid;
+            grid-template-columns: 360px 1fr;
+            gap: 20px;
+            max-width: 1100px;
+            margin: 0 auto;
         }
 
-        .model-status.ready {
-            background: #e6f9f0;
-            color: #27ae60;
+        @media (max-width: 800px) {
+            .layout { grid-template-columns: 1fr; }
         }
 
-        .model-status.not-ready {
-            background: #fdecea;
-            color: #c0392b;
+        .card {
+            background: #1a1a2e;
+            border-radius: 16px;
+            padding: 24px;
+            border: 1px solid #2a2a45;
+        }
+
+        .card-title {
+            font-size: 0.75rem;
+            text-transform: uppercase;
+            letter-spacing: 1.5px;
+            color: #666;
+            margin-bottom: 16px;
+            font-weight: 700;
         }
 
         .upload-area {
-            border: 2px dashed #b0b8d1;
-            border-radius: 15px;
-            padding: 40px 20px;
+            border: 2px dashed #2a2a55;
+            border-radius: 12px;
+            padding: 36px 16px;
             text-align: center;
             cursor: pointer;
-            transition: all 0.3s;
-            background: #f8f9ff;
-            margin-bottom: 20px;
+            transition: all 0.25s;
+            background: #12122a;
+            margin-bottom: 16px;
         }
-
         .upload-area:hover, .upload-area.dragover {
-            border-color: #667eea;
-            background: #eff1ff;
+            border-color: #7c6fff;
+            background: #1a1a40;
         }
-
-        .upload-area .icon { font-size: 3rem; margin-bottom: 10px; }
-        .upload-area p { color: #666; font-size: 0.95rem; }
-        .upload-area span { color: #667eea; font-weight: 600; }
+        .upload-area .icon { font-size: 2.5rem; margin-bottom: 10px; }
+        .upload-area p { color: #888; font-size: 0.88rem; }
+        .upload-area span { color: #7c6fff; font-weight: 600; }
 
         #fileInput { display: none; }
 
         .btn {
             display: block;
             width: 100%;
-            padding: 14px;
-            background: linear-gradient(135deg, #667eea, #764ba2);
+            padding: 13px;
+            background: linear-gradient(135deg, #7c6fff, #a855f7);
             color: white;
             border: none;
-            border-radius: 12px;
-            font-size: 1.05rem;
+            border-radius: 10px;
+            font-size: 1rem;
             font-weight: 600;
             cursor: pointer;
             transition: opacity 0.2s, transform 0.1s;
-            margin-bottom: 25px;
         }
-
-        .btn:hover { opacity: 0.9; transform: translateY(-1px); }
+        .btn:hover { opacity: 0.88; transform: translateY(-1px); }
         .btn:active { transform: translateY(0); }
-        .btn:disabled { opacity: 0.5; cursor: not-allowed; transform: none; }
+        .btn:disabled { opacity: 0.4; cursor: not-allowed; transform: none; }
 
-        .result-section { display: none; }
-
-        .image-preview {
-            text-align: center;
-            margin-bottom: 20px;
+        .preview-img {
+            width: 100%;
+            border-radius: 10px;
+            object-fit: cover;
+            max-height: 220px;
+            display: none;
+            margin-bottom: 16px;
         }
 
-        .image-preview img {
-            max-width: 200px;
-            max-height: 200px;
+        .prediction-badge {
+            display: none;
+            background: linear-gradient(135deg, #7c6fff22, #a855f722);
+            border: 1px solid #7c6fff55;
             border-radius: 12px;
-            box-shadow: 0 4px 15px rgba(0,0,0,0.15);
-        }
-
-        .prediction-card {
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-            color: white;
-            border-radius: 15px;
-            padding: 25px;
+            padding: 18px;
             text-align: center;
-            margin-bottom: 20px;
+            margin-bottom: 16px;
         }
+        .prediction-badge .emoji { font-size: 2.5rem; }
+        .prediction-badge .cls { font-size: 1.5rem; font-weight: 700; color: #fff; margin: 4px 0; }
+        .prediction-badge .conf { font-size: 0.88rem; color: #a855f7; font-weight: 600; }
 
-        .prediction-card .emoji { font-size: 3rem; margin-bottom: 8px; }
-        .prediction-card .class-name { font-size: 1.8rem; font-weight: 700; margin-bottom: 5px; }
-        .prediction-card .confidence { font-size: 1rem; opacity: 0.85; }
+        .loading {
+            display: none;
+            text-align: center;
+            padding: 30px 0;
+        }
+        .spinner {
+            width: 36px; height: 36px;
+            border: 3px solid #2a2a45;
+            border-top-color: #7c6fff;
+            border-radius: 50%;
+            animation: spin 0.75s linear infinite;
+            margin: 0 auto 10px;
+        }
+        @keyframes spin { to { transform: rotate(360deg); } }
+        .loading p { color: #888; font-size: 0.85rem; }
 
-        .probabilities h3 {
-            color: #444;
+        .error-msg {
+            background: #3d0d0d;
+            color: #e74c3c;
+            padding: 10px 14px;
+            border-radius: 8px;
+            font-size: 0.85rem;
             margin-bottom: 12px;
-            font-size: 0.95rem;
-            text-transform: uppercase;
-            letter-spacing: 1px;
+            display: none;
+            border: 1px solid #e74c3c44;
         }
 
-        .prob-bar {
+        .prob-list { margin-top: 4px; }
+        .prob-row {
             display: flex;
             align-items: center;
-            margin-bottom: 8px;
-            gap: 10px;
+            gap: 8px;
+            margin-bottom: 7px;
         }
-
         .prob-label {
-            width: 110px;
-            font-size: 0.82rem;
-            color: #555;
+            width: 100px;
+            font-size: 0.78rem;
+            color: #aaa;
             text-align: right;
             flex-shrink: 0;
         }
-
         .prob-track {
             flex: 1;
-            background: #eee;
-            border-radius: 10px;
-            height: 10px;
+            background: #12122a;
+            border-radius: 6px;
+            height: 8px;
             overflow: hidden;
         }
-
         .prob-fill {
             height: 100%;
-            border-radius: 10px;
-            background: linear-gradient(90deg, #667eea, #764ba2);
-            transition: width 0.6s ease;
+            border-radius: 6px;
+            transition: width 0.7s cubic-bezier(.4,0,.2,1);
         }
-
-        .prob-value {
-            width: 45px;
-            font-size: 0.82rem;
-            color: #777;
+        .prob-val {
+            width: 38px;
+            font-size: 0.75rem;
+            color: #666;
             flex-shrink: 0;
         }
 
-        .loading {
-            text-align: center;
-            padding: 30px;
-            display: none;
+        .vis-section { display: none; }
+
+        .vis-card {
+            background: #12122a;
+            border-radius: 12px;
+            padding: 16px;
+            margin-bottom: 16px;
+            border: 1px solid #2a2a45;
+        }
+        .vis-card h3 {
+            font-size: 0.75rem;
+            text-transform: uppercase;
+            letter-spacing: 1.2px;
+            color: #666;
+            margin-bottom: 12px;
+            font-weight: 700;
+        }
+        .vis-card img {
+            width: 100%;
+            border-radius: 8px;
+            display: block;
         }
 
-        .spinner {
-            width: 40px;
-            height: 40px;
-            border: 4px solid #eee;
-            border-top-color: #667eea;
-            border-radius: 50%;
-            animation: spin 0.8s linear infinite;
-            margin: 0 auto 12px;
+        .tabs {
+            display: flex;
+            gap: 6px;
+            margin-bottom: 16px;
         }
-
-        @keyframes spin { to { transform: rotate(360deg); } }
-
-        .error-msg {
-            background: #fdecea;
-            color: #c0392b;
-            padding: 12px 18px;
-            border-radius: 10px;
-            font-size: 0.9rem;
-            margin-bottom: 15px;
-            display: none;
+        .tab-btn {
+            padding: 7px 14px;
+            border-radius: 8px;
+            border: 1px solid #2a2a45;
+            background: transparent;
+            color: #888;
+            font-size: 0.8rem;
+            cursor: pointer;
+            transition: all 0.2s;
         }
+        .tab-btn.active {
+            background: #7c6fff22;
+            border-color: #7c6fff;
+            color: #7c6fff;
+            font-weight: 600;
+        }
+        .tab-panel { display: none; }
+        .tab-panel.active { display: block; }
     </style>
 </head>
 <body>
-<div class="container">
-    <div class="header">
-        <h1>👗 Fashion AI Detector</h1>
-        <p>Upload a clothing image to classify it using a custom ResNet model</p>
-    </div>
-
+<div class="page-header">
+    <h1>👗 Fashion AI Detector</h1>
+    <p>ResNet model — Smart preprocessing · Grad-CAM · Confidence matrix</p>
     {% if model_loaded %}
-    <div class="model-status ready">✅ Model ready — ResNet trained on Fashion MNIST</div>
+    <span class="model-badge ready">✅ Model ready</span>
     {% else %}
-    <div class="model-status not-ready">⚠️ Model not found — please run the training pipeline first</div>
+    <span class="model-badge not-ready">⚠️ Model not found</span>
     {% endif %}
+</div>
 
-    <div class="upload-area" id="uploadArea">
-        <div class="icon">📁</div>
-        <p>Drag & drop an image here or <span>browse files</span></p>
-        <p style="font-size:0.8rem; margin-top:6px; color:#aaa;">PNG, JPG, JPEG supported</p>
-    </div>
-    <input type="file" id="fileInput" accept="image/png,image/jpeg,image/jpg">
+<div class="layout">
+    <!-- LEFT PANEL -->
+    <div>
+        <div class="card">
+            <div class="card-title">Upload Image</div>
 
-    <div class="error-msg" id="errorMsg"></div>
+            <div class="upload-area" id="uploadArea">
+                <div class="icon">📁</div>
+                <p>Drag & drop a clothing image<br>or <span>browse files</span></p>
+                <p style="font-size:0.75rem;margin-top:6px;color:#555;">PNG · JPG · JPEG</p>
+            </div>
+            <input type="file" id="fileInput" accept="image/png,image/jpeg,image/jpg">
 
-    <button class="btn" id="analyzeBtn" disabled>🔍 Analyze Image</button>
-
-    <div class="loading" id="loading">
-        <div class="spinner"></div>
-        <p style="color:#888;">Analyzing with AI...</p>
-    </div>
-
-    <div class="result-section" id="resultSection">
-        <div class="image-preview">
-            <img id="previewImg" src="" alt="Uploaded image">
+            <div class="error-msg" id="errorMsg"></div>
+            <button class="btn" id="analyzeBtn" disabled>🔍 Analyze Image</button>
         </div>
-        <div class="prediction-card">
-            <div class="emoji" id="predEmoji"></div>
-            <div class="class-name" id="predClass"></div>
-            <div class="confidence" id="predConf"></div>
+
+        <br>
+
+        <div class="card" id="resultCard" style="display:none;">
+            <div class="card-title">Result</div>
+            <img id="previewImg" class="preview-img" src="" alt="">
+            <div class="prediction-badge" id="predBadge">
+                <div class="emoji" id="predEmoji"></div>
+                <div class="cls" id="predClass"></div>
+                <div class="conf" id="predConf"></div>
+            </div>
+            <div class="loading" id="loading">
+                <div class="spinner"></div>
+                <p>Analyzing with AI...</p>
+            </div>
+
+            <div class="card-title" style="margin-top:8px;">Class Probabilities</div>
+            <div class="prob-list" id="probList"></div>
         </div>
-        <div class="probabilities">
-            <h3>All Class Probabilities</h3>
-            <div id="probBars"></div>
+    </div>
+
+    <!-- RIGHT PANEL -->
+    <div>
+        <div class="card vis-section" id="visSection">
+            <div class="card-title">Visual Analysis</div>
+
+            <div class="tabs">
+                <button class="tab-btn active" data-tab="heatmap">🔥 Grad-CAM Heatmap</button>
+                <button class="tab-btn" data-tab="matrix">📊 Confidence Matrix</button>
+            </div>
+
+            <div class="tab-panel active" id="tab-heatmap">
+                <div class="vis-card">
+                    <h3>Gradient-weighted Class Activation Map</h3>
+                    <img id="gradcamImg" src="" alt="Grad-CAM">
+                    <p style="font-size:0.75rem;color:#555;margin-top:8px;">
+                        Red/yellow regions = where the model focuses most when making its prediction.
+                    </p>
+                </div>
+            </div>
+
+            <div class="tab-panel" id="tab-matrix">
+                <div class="vis-card">
+                    <h3>Prediction Confidence Per Class</h3>
+                    <img id="confMatrixImg" src="" alt="Confidence Matrix">
+                    <p style="font-size:0.75rem;color:#555;margin-top:8px;">
+                        Green = high confidence · Red = low confidence for each class.
+                    </p>
+                </div>
+            </div>
+        </div>
+
+        <div class="card" id="emptyVis" style="display:flex;align-items:center;justify-content:center;min-height:300px;flex-direction:column;gap:12px;">
+            <div style="font-size:3rem;">🧠</div>
+            <p style="color:#555;text-align:center;font-size:0.9rem;">Upload an image to see<br>Grad-CAM heatmap &amp; confidence matrix</p>
         </div>
     </div>
 </div>
@@ -255,53 +319,51 @@
     const fileInput = document.getElementById('fileInput');
     const analyzeBtn = document.getElementById('analyzeBtn');
     const loading = document.getElementById('loading');
-    const resultSection = document.getElementById('resultSection');
+    const resultCard = document.getElementById('resultCard');
+    const predBadge = document.getElementById('predBadge');
     const errorMsg = document.getElementById('errorMsg');
+    const visSection = document.getElementById('visSection');
+    const emptyVis = document.getElementById('emptyVis');
 
     let selectedFile = null;
 
     uploadArea.addEventListener('click', () => fileInput.click());
-
-    uploadArea.addEventListener('dragover', (e) => {
-        e.preventDefault();
-        uploadArea.classList.add('dragover');
-    });
-
+    uploadArea.addEventListener('dragover', e => { e.preventDefault(); uploadArea.classList.add('dragover'); });
     uploadArea.addEventListener('dragleave', () => uploadArea.classList.remove('dragover'));
-
-    uploadArea.addEventListener('drop', (e) => {
+    uploadArea.addEventListener('drop', e => {
         e.preventDefault();
         uploadArea.classList.remove('dragover');
-        const file = e.dataTransfer.files[0];
-        if (file) handleFileSelect(file);
+        if (e.dataTransfer.files[0]) handleFileSelect(e.dataTransfer.files[0]);
     });
-
-    fileInput.addEventListener('change', () => {
-        if (fileInput.files[0]) handleFileSelect(fileInput.files[0]);
-    });
+    fileInput.addEventListener('change', () => { if (fileInput.files[0]) handleFileSelect(fileInput.files[0]); });
 
     function handleFileSelect(file) {
         selectedFile = file;
-        uploadArea.innerHTML = `<div class="icon">✅</div><p><strong>${file.name}</strong></p><p style="font-size:0.8rem;color:#aaa;">Click to change</p>`;
+        uploadArea.innerHTML = `<div class="icon">✅</div><p><strong>${file.name}</strong></p><p style="font-size:0.75rem;color:#555;margin-top:4px;">Click to change</p>`;
         analyzeBtn.disabled = false;
         errorMsg.style.display = 'none';
-        resultSection.style.display = 'none';
+        predBadge.style.display = 'none';
     }
 
     analyzeBtn.addEventListener('click', async () => {
         if (!selectedFile) return;
 
+        resultCard.style.display = 'block';
         loading.style.display = 'block';
-        resultSection.style.display = 'none';
+        predBadge.style.display = 'none';
+        document.getElementById('previewImg').style.display = 'none';
+        document.getElementById('probList').innerHTML = '';
         errorMsg.style.display = 'none';
         analyzeBtn.disabled = true;
+        visSection.style.display = 'none';
+        emptyVis.style.display = 'flex';
 
         const formData = new FormData();
         formData.append('image', selectedFile);
 
         try {
-            const response = await fetch('/predict', { method: 'POST', body: formData });
-            const data = await response.json();
+            const resp = await fetch('/predict', { method: 'POST', body: formData });
+            const data = await resp.json();
 
             loading.style.display = 'none';
             analyzeBtn.disabled = false;
@@ -312,27 +374,39 @@
                 return;
             }
 
-            document.getElementById('previewImg').src = 'data:image/png;base64,' + data.image_b64;
+            const previewImg = document.getElementById('previewImg');
+            previewImg.src = 'data:image/png;base64,' + data.image_b64;
+            previewImg.style.display = 'block';
+
             document.getElementById('predEmoji').textContent = data.emoji;
             document.getElementById('predClass').textContent = data.predicted_class;
             document.getElementById('predConf').textContent = `Confidence: ${data.confidence.toFixed(1)}%`;
+            predBadge.style.display = 'block';
 
-            const barsContainer = document.getElementById('probBars');
-            barsContainer.innerHTML = '';
+            const probList = document.getElementById('probList');
+            probList.innerHTML = '';
             data.all_probabilities.forEach(item => {
-                const bar = document.createElement('div');
-                bar.className = 'prob-bar';
-                bar.innerHTML = `
+                const row = document.createElement('div');
+                row.className = 'prob-row';
+                row.innerHTML = `
                     <div class="prob-label">${item.emoji} ${item.class}</div>
                     <div class="prob-track">
-                        <div class="prob-fill" style="width:${Math.min(item.probability, 100)}%"></div>
+                        <div class="prob-fill" style="width:${Math.min(item.probability,100)}%;background:${item.color}"></div>
                     </div>
-                    <div class="prob-value">${item.probability.toFixed(1)}%</div>
+                    <div class="prob-val">${item.probability.toFixed(1)}%</div>
                 `;
-                barsContainer.appendChild(bar);
+                probList.appendChild(row);
             });
 
-            resultSection.style.display = 'block';
+            if (data.gradcam_b64) {
+                document.getElementById('gradcamImg').src = 'data:image/png;base64,' + data.gradcam_b64;
+            }
+            if (data.confusion_matrix_b64) {
+                document.getElementById('confMatrixImg').src = 'data:image/png;base64,' + data.confusion_matrix_b64;
+            }
+
+            visSection.style.display = 'block';
+            emptyVis.style.display = 'none';
 
         } catch (err) {
             loading.style.display = 'none';
@@ -340,6 +414,15 @@
             errorMsg.textContent = '❌ Network error. Please try again.';
             errorMsg.style.display = 'block';
         }
+    });
+
+    document.querySelectorAll('.tab-btn').forEach(btn => {
+        btn.addEventListener('click', () => {
+            document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+            document.querySelectorAll('.tab-panel').forEach(p => p.classList.remove('active'));
+            btn.classList.add('active');
+            document.getElementById('tab-' + btn.dataset.tab).classList.add('active');
+        });
     });
 </script>
 </body>
