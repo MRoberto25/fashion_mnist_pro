@@ -1,429 +1,506 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Fashion AI Detector</title>
-    <style>
-        * { box-sizing: border-box; margin: 0; padding: 0; }
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Fashion AI — Deep Analysis</title>
+<style>
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
 
-        body {
-            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-            background: #0f0f23;
-            min-height: 100vh;
-            color: #e0e0e0;
-            padding: 24px 16px;
-        }
+:root {
+    --bg: #080818;
+    --card: #10102a;
+    --card2: #13132e;
+    --border: #1e1e45;
+    --accent: #7c6fff;
+    --accent2: #a855f7;
+    --text: #e0e0f0;
+    --muted: #666;
+    --green: #22c55e;
+    --red: #ef4444;
+}
 
-        .page-header {
-            text-align: center;
-            margin-bottom: 28px;
-        }
-        .page-header h1 { font-size: 2rem; color: #fff; margin-bottom: 6px; }
-        .page-header p { color: #888; font-size: 0.92rem; }
+body {
+    font-family: 'Segoe UI', system-ui, sans-serif;
+    background: var(--bg);
+    color: var(--text);
+    min-height: 100vh;
+    padding: 20px;
+}
 
-        .model-badge {
-            display: inline-block;
-            padding: 6px 16px;
-            border-radius: 20px;
-            font-size: 0.8rem;
-            font-weight: 600;
-            margin-top: 10px;
-        }
-        .model-badge.ready { background: #0d3d22; color: #27ae60; border: 1px solid #27ae60; }
-        .model-badge.not-ready { background: #3d0d0d; color: #e74c3c; border: 1px solid #e74c3c; }
+/* ── HEADER ── */
+.header {
+    text-align: center;
+    margin-bottom: 28px;
+}
+.header h1 {
+    font-size: 2.1rem;
+    font-weight: 800;
+    background: linear-gradient(135deg, #a78bfa, #60a5fa, #f472b6);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+    margin-bottom: 6px;
+}
+.header p { color: var(--muted); font-size: 0.88rem; }
+.badge {
+    display: inline-flex; align-items: center; gap: 6px;
+    padding: 5px 14px; border-radius: 20px;
+    font-size: 0.78rem; font-weight: 700; margin-top: 10px;
+}
+.badge.ready    { background: #052818; color: var(--green); border: 1px solid #166534; }
+.badge.notready { background: #2a0a0a; color: var(--red);   border: 1px solid #7f1d1d; }
+.badge.training { background: #1a1205; color: #f59e0b; border: 1px solid #92400e;
+                  animation: pulse 1.8s ease-in-out infinite; }
+@keyframes pulse { 50% { opacity: 0.6; } }
 
-        .layout {
-            display: grid;
-            grid-template-columns: 360px 1fr;
-            gap: 20px;
-            max-width: 1100px;
-            margin: 0 auto;
-        }
+/* ── TRAINING BANNER ── */
+.train-banner {
+    background: #1a1205;
+    border: 1px solid #92400e;
+    border-radius: 10px;
+    padding: 12px 18px;
+    margin-bottom: 18px;
+    display: flex; align-items: center; gap: 12px;
+    font-size: 0.82rem; color: #f59e0b;
+}
+.train-banner .spinner-sm {
+    width: 16px; height: 16px;
+    border: 2px solid #92400e44;
+    border-top-color: #f59e0b;
+    border-radius: 50%;
+    animation: spin 0.8s linear infinite;
+    flex-shrink: 0;
+}
+.train-log {
+    font-size: 0.72rem; color: #888; font-family: monospace;
+    white-space: pre-wrap; max-height: 90px; overflow: hidden;
+    margin-top: 6px; line-height: 1.5;
+}
 
-        @media (max-width: 800px) {
-            .layout { grid-template-columns: 1fr; }
-        }
+/* ── MAIN GRID ── */
+.main-grid {
+    display: grid;
+    grid-template-columns: 340px 1fr;
+    gap: 18px;
+    max-width: 1180px;
+    margin: 0 auto;
+}
+@media (max-width: 820px) { .main-grid { grid-template-columns: 1fr; } }
 
-        .card {
-            background: #1a1a2e;
-            border-radius: 16px;
-            padding: 24px;
-            border: 1px solid #2a2a45;
-        }
+/* ── CARDS ── */
+.card {
+    background: var(--card);
+    border: 1px solid var(--border);
+    border-radius: 16px;
+    padding: 20px;
+}
+.card-label {
+    font-size: 0.68rem; text-transform: uppercase;
+    letter-spacing: 1.8px; color: var(--muted);
+    font-weight: 700; margin-bottom: 14px;
+}
 
-        .card-title {
-            font-size: 0.75rem;
-            text-transform: uppercase;
-            letter-spacing: 1.5px;
-            color: #666;
-            margin-bottom: 16px;
-            font-weight: 700;
-        }
+/* ── UPLOAD ── */
+.drop-zone {
+    border: 2px dashed var(--border);
+    border-radius: 12px;
+    padding: 32px 16px;
+    text-align: center;
+    cursor: pointer;
+    transition: all 0.22s;
+    background: #0a0a20;
+    margin-bottom: 14px;
+}
+.drop-zone:hover, .drop-zone.drag { border-color: var(--accent); background: #12123a; }
+.drop-zone .dz-icon { font-size: 2.4rem; margin-bottom: 8px; }
+.drop-zone p { color: var(--muted); font-size: 0.84rem; }
+.drop-zone .hl { color: var(--accent); font-weight: 600; }
+#fileInput { display: none; }
 
-        .upload-area {
-            border: 2px dashed #2a2a55;
-            border-radius: 12px;
-            padding: 36px 16px;
-            text-align: center;
-            cursor: pointer;
-            transition: all 0.25s;
-            background: #12122a;
-            margin-bottom: 16px;
-        }
-        .upload-area:hover, .upload-area.dragover {
-            border-color: #7c6fff;
-            background: #1a1a40;
-        }
-        .upload-area .icon { font-size: 2.5rem; margin-bottom: 10px; }
-        .upload-area p { color: #888; font-size: 0.88rem; }
-        .upload-area span { color: #7c6fff; font-weight: 600; }
+.analyze-btn {
+    width: 100%; padding: 13px;
+    background: linear-gradient(135deg, var(--accent), var(--accent2));
+    border: none; border-radius: 10px;
+    color: white; font-size: 1rem; font-weight: 700;
+    cursor: pointer; transition: opacity .2s, transform .1s;
+    letter-spacing: 0.5px;
+}
+.analyze-btn:hover:not(:disabled) { opacity: 0.88; transform: translateY(-1px); }
+.analyze-btn:disabled { opacity: 0.35; cursor: not-allowed; }
 
-        #fileInput { display: none; }
+/* ── RESULT CARD ── */
+#resultCard { display: none; margin-top: 14px; }
 
-        .btn {
-            display: block;
-            width: 100%;
-            padding: 13px;
-            background: linear-gradient(135deg, #7c6fff, #a855f7);
-            color: white;
-            border: none;
-            border-radius: 10px;
-            font-size: 1rem;
-            font-weight: 600;
-            cursor: pointer;
-            transition: opacity 0.2s, transform 0.1s;
-        }
-        .btn:hover { opacity: 0.88; transform: translateY(-1px); }
-        .btn:active { transform: translateY(0); }
-        .btn:disabled { opacity: 0.4; cursor: not-allowed; transform: none; }
+.pred-img {
+    width: 100%; max-height: 200px; object-fit: contain;
+    border-radius: 10px; margin-bottom: 14px; display: none;
+}
 
-        .preview-img {
-            width: 100%;
-            border-radius: 10px;
-            object-fit: cover;
-            max-height: 220px;
-            display: none;
-            margin-bottom: 16px;
-        }
+.pred-box {
+    border-radius: 12px; padding: 16px; text-align: center;
+    background: linear-gradient(135deg, #12124a, #1e0a3c);
+    border: 1px solid #3a2a6a;
+    margin-bottom: 14px; display: none;
+}
+.pred-box .pe { font-size: 2.8rem; line-height: 1; }
+.pred-box .pc { font-size: 1.6rem; font-weight: 800; color: #fff; margin: 6px 0 4px; }
+.pred-box .pf { font-size: 0.85rem; color: var(--accent); font-weight: 600; }
 
-        .prediction-badge {
-            display: none;
-            background: linear-gradient(135deg, #7c6fff22, #a855f722);
-            border: 1px solid #7c6fff55;
-            border-radius: 12px;
-            padding: 18px;
-            text-align: center;
-            margin-bottom: 16px;
-        }
-        .prediction-badge .emoji { font-size: 2.5rem; }
-        .prediction-badge .cls { font-size: 1.5rem; font-weight: 700; color: #fff; margin: 4px 0; }
-        .prediction-badge .conf { font-size: 0.88rem; color: #a855f7; font-weight: 600; }
+/* Certainty meter */
+.meter-row { display: flex; align-items: center; gap: 10px; margin-top: 10px; }
+.meter-label { font-size: 0.7rem; color: var(--muted); white-space: nowrap; }
+.meter-track {
+    flex: 1; height: 6px; background: #1a1a40;
+    border-radius: 4px; overflow: hidden;
+}
+.meter-fill {
+    height: 100%; border-radius: 4px;
+    background: linear-gradient(90deg, #22c55e, #84cc16);
+    transition: width 0.8s cubic-bezier(.4,0,.2,1);
+}
+.meter-val { font-size: 0.7rem; color: var(--green); font-weight: 700; width: 36px; text-align: right; }
 
-        .loading {
-            display: none;
-            text-align: center;
-            padding: 30px 0;
-        }
-        .spinner {
-            width: 36px; height: 36px;
-            border: 3px solid #2a2a45;
-            border-top-color: #7c6fff;
-            border-radius: 50%;
-            animation: spin 0.75s linear infinite;
-            margin: 0 auto 10px;
-        }
-        @keyframes spin { to { transform: rotate(360deg); } }
-        .loading p { color: #888; font-size: 0.85rem; }
+/* Probability bars */
+.prob-item {
+    display: flex; align-items: center; gap: 8px; margin-bottom: 6px;
+}
+.prob-name { width: 96px; font-size: 0.74rem; color: #aaa; text-align: right; flex-shrink: 0; }
+.prob-track-outer { flex: 1; background: #0a0a20; border-radius: 5px; height: 7px; overflow: hidden; }
+.prob-bar-fill { height: 100%; border-radius: 5px; transition: width .7s cubic-bezier(.4,0,.2,1); }
+.prob-pct { width: 36px; font-size: 0.72rem; color: var(--muted); flex-shrink: 0; }
 
-        .error-msg {
-            background: #3d0d0d;
-            color: #e74c3c;
-            padding: 10px 14px;
-            border-radius: 8px;
-            font-size: 0.85rem;
-            margin-bottom: 12px;
-            display: none;
-            border: 1px solid #e74c3c44;
-        }
+/* ── RIGHT PANEL ── */
+.right-panel { display: flex; flex-direction: column; gap: 16px; }
 
-        .prob-list { margin-top: 4px; }
-        .prob-row {
-            display: flex;
-            align-items: center;
-            gap: 8px;
-            margin-bottom: 7px;
-        }
-        .prob-label {
-            width: 100px;
-            font-size: 0.78rem;
-            color: #aaa;
-            text-align: right;
-            flex-shrink: 0;
-        }
-        .prob-track {
-            flex: 1;
-            background: #12122a;
-            border-radius: 6px;
-            height: 8px;
-            overflow: hidden;
-        }
-        .prob-fill {
-            height: 100%;
-            border-radius: 6px;
-            transition: width 0.7s cubic-bezier(.4,0,.2,1);
-        }
-        .prob-val {
-            width: 38px;
-            font-size: 0.75rem;
-            color: #666;
-            flex-shrink: 0;
-        }
+/* Empty state */
+.empty-vis {
+    display: flex; flex-direction: column;
+    align-items: center; justify-content: center;
+    min-height: 320px; gap: 14px;
+}
+.empty-vis .big-icon { font-size: 4rem; opacity: 0.35; }
+.empty-vis p { color: var(--muted); font-size: 0.88rem; text-align: center; }
 
-        .vis-section { display: none; }
+/* ── VIS TABS ── */
+.tabs { display: flex; gap: 6px; margin-bottom: 14px; flex-wrap: wrap; }
+.tab-btn {
+    padding: 6px 13px; border-radius: 8px;
+    border: 1px solid var(--border);
+    background: transparent; color: var(--muted);
+    font-size: 0.78rem; cursor: pointer; transition: all .18s;
+    white-space: nowrap;
+}
+.tab-btn.on { background: #1e1a50; border-color: var(--accent); color: var(--accent); font-weight: 700; }
 
-        .vis-card {
-            background: #12122a;
-            border-radius: 12px;
-            padding: 16px;
-            margin-bottom: 16px;
-            border: 1px solid #2a2a45;
-        }
-        .vis-card h3 {
-            font-size: 0.75rem;
-            text-transform: uppercase;
-            letter-spacing: 1.2px;
-            color: #666;
-            margin-bottom: 12px;
-            font-weight: 700;
-        }
-        .vis-card img {
-            width: 100%;
-            border-radius: 8px;
-            display: block;
-        }
+.tab-pane { display: none; }
+.tab-pane.on { display: block; }
 
-        .tabs {
-            display: flex;
-            gap: 6px;
-            margin-bottom: 16px;
-        }
-        .tab-btn {
-            padding: 7px 14px;
-            border-radius: 8px;
-            border: 1px solid #2a2a45;
-            background: transparent;
-            color: #888;
-            font-size: 0.8rem;
-            cursor: pointer;
-            transition: all 0.2s;
-        }
-        .tab-btn.active {
-            background: #7c6fff22;
-            border-color: #7c6fff;
-            color: #7c6fff;
-            font-weight: 600;
-        }
-        .tab-panel { display: none; }
-        .tab-panel.active { display: block; }
-    </style>
+.vis-img {
+    width: 100%; border-radius: 10px; display: block;
+    border: 1px solid var(--border);
+}
+.vis-caption {
+    font-size: 0.72rem; color: var(--muted);
+    margin-top: 8px; line-height: 1.5;
+}
+
+/* ── LOADING ── */
+.loading-overlay {
+    display: none; text-align: center; padding: 40px 0;
+}
+.spinner {
+    width: 44px; height: 44px; margin: 0 auto 14px;
+    border: 4px solid #1e1e45;
+    border-top-color: var(--accent);
+    border-radius: 50%;
+    animation: spin .75s linear infinite;
+}
+@keyframes spin { to { transform: rotate(360deg); } }
+.loading-overlay p { color: var(--muted); font-size: 0.84rem; }
+
+/* ── ERROR ── */
+.err {
+    background: #2a0a0a; border: 1px solid #7f1d1d;
+    color: var(--red); border-radius: 8px;
+    padding: 10px 14px; font-size: 0.83rem;
+    margin-bottom: 12px; display: none;
+}
+
+/* ── TOP-3 PODIUM ── */
+.top3 { display: flex; gap: 10px; margin-bottom: 6px; }
+.podium-item {
+    flex: 1; border-radius: 10px; padding: 12px 8px;
+    text-align: center;
+    border: 1px solid var(--border);
+    background: #0d0d28;
+}
+.podium-item.p1 { border-color: #fbbf24; background: #1a1300; }
+.podium-item .rank { font-size: 1.2rem; }
+.podium-item .pe2 { font-size: 1.6rem; margin: 4px 0; }
+.podium-item .pc2 { font-size: 0.72rem; color: #ccc; font-weight: 600; }
+.podium-item .pct2 { font-size: 0.78rem; margin-top: 4px; font-weight: 700; }
+</style>
 </head>
 <body>
-<div class="page-header">
-    <h1>👗 Fashion AI Detector</h1>
-    <p>ResNet model — Smart preprocessing · Grad-CAM · Confidence matrix</p>
-    {% if model_loaded %}
-    <span class="model-badge ready">✅ Model ready</span>
+
+<div class="header">
+    <h1>🧠 Fashion AI — Deep Visual Analysis</h1>
+    <p>DeepResNet + SE Attention · Test-Time Augmentation · Grad-CAM · Saliency · Radar</p>
+    {% if training_in_progress %}
+    <span class="badge training">⚙️ Retraining for higher accuracy…</span>
+    {% elif model_loaded %}
+    <span class="badge ready">✅ Model ready</span>
     {% else %}
-    <span class="model-badge not-ready">⚠️ Model not found</span>
+    <span class="badge notready">⚠️ Model not found</span>
     {% endif %}
 </div>
 
-<div class="layout">
-    <!-- LEFT PANEL -->
+{% if training_in_progress %}
+<div class="train-banner" id="trainBanner" style="max-width:1180px;margin:0 auto 18px;">
+    <div class="spinner-sm"></div>
+    <div style="flex:1;">
+        <strong>Training in progress</strong> — improved DeepResNet + SE Attention model is being built for higher accuracy.
+        <div class="train-log" id="trainLog">Loading training log…</div>
+    </div>
+</div>
+{% endif %}
+
+<div class="main-grid">
+
+    <!-- ── LEFT PANEL ─────────────────────────────────────────── -->
     <div>
         <div class="card">
-            <div class="card-title">Upload Image</div>
-
-            <div class="upload-area" id="uploadArea">
-                <div class="icon">📁</div>
-                <p>Drag & drop a clothing image<br>or <span>browse files</span></p>
-                <p style="font-size:0.75rem;margin-top:6px;color:#555;">PNG · JPG · JPEG</p>
+            <div class="card-label">Upload Clothing Image</div>
+            <div class="drop-zone" id="dropZone">
+                <div class="dz-icon">📁</div>
+                <p>Drag &amp; drop here or <span class="hl">browse files</span></p>
+                <p style="font-size:.72rem;margin-top:5px;color:#444;">PNG · JPG · JPEG</p>
             </div>
             <input type="file" id="fileInput" accept="image/png,image/jpeg,image/jpg">
-
-            <div class="error-msg" id="errorMsg"></div>
-            <button class="btn" id="analyzeBtn" disabled>🔍 Analyze Image</button>
+            <div class="err" id="errMsg"></div>
+            <button class="analyze-btn" id="analyzeBtn" disabled>🔍 Analyze with AI</button>
         </div>
 
-        <br>
-
-        <div class="card" id="resultCard" style="display:none;">
-            <div class="card-title">Result</div>
-            <img id="previewImg" class="preview-img" src="" alt="">
-            <div class="prediction-badge" id="predBadge">
-                <div class="emoji" id="predEmoji"></div>
-                <div class="cls" id="predClass"></div>
-                <div class="conf" id="predConf"></div>
-            </div>
-            <div class="loading" id="loading">
+        <div class="card" id="resultCard">
+            <div class="card-label">Prediction</div>
+            <div class="loading-overlay" id="loading">
                 <div class="spinner"></div>
-                <p>Analyzing with AI...</p>
+                <p>Running TTA inference &amp; generating visualizations…</p>
+            </div>
+            <img class="pred-img" id="predImg" src="" alt="preview">
+            <div class="pred-box" id="predBox">
+                <div class="pe" id="pe"></div>
+                <div class="pc" id="pc"></div>
+                <div class="pf" id="pf"></div>
+                <div class="meter-row">
+                    <span class="meter-label">Model certainty</span>
+                    <div class="meter-track"><div class="meter-fill" id="meterFill" style="width:0%"></div></div>
+                    <span class="meter-val" id="meterVal">0%</span>
+                </div>
             </div>
 
-            <div class="card-title" style="margin-top:8px;">Class Probabilities</div>
-            <div class="prob-list" id="probList"></div>
+            <!-- Top-3 podium -->
+            <div id="top3Wrap" style="display:none;">
+                <div class="card-label" style="margin-bottom:10px;">Top 3 Predictions</div>
+                <div class="top3" id="top3"></div>
+            </div>
+
+            <!-- Probability bars -->
+            <div id="probSection" style="display:none;">
+                <div class="card-label" style="margin:12px 0 10px;">All Class Scores</div>
+                <div id="probBars"></div>
+            </div>
         </div>
     </div>
 
-    <!-- RIGHT PANEL -->
-    <div>
-        <div class="card vis-section" id="visSection">
-            <div class="card-title">Visual Analysis</div>
+    <!-- ── RIGHT PANEL ────────────────────────────────────────── -->
+    <div class="right-panel">
 
-            <div class="tabs">
-                <button class="tab-btn active" data-tab="heatmap">🔥 Grad-CAM Heatmap</button>
-                <button class="tab-btn" data-tab="matrix">📊 Confidence Matrix</button>
+        <!-- Empty state -->
+        <div class="card empty-vis" id="emptyVis">
+            <div class="big-icon">🔬</div>
+            <p>Upload a clothing image to see<br>Grad-CAM · Saliency · TTA Breakdown · Pipeline · Radar</p>
+        </div>
+
+        <!-- Visualisation card (hidden until results arrive) -->
+        <div class="card" id="visCard" style="display:none;">
+            <div class="tabs" id="tabs">
+                <button class="tab-btn on" data-tab="pipeline">🔄 Pipeline</button>
+                <button class="tab-btn" data-tab="gradcam">🔥 Grad-CAM</button>
+                <button class="tab-btn" data-tab="saliency">⚡ Saliency</button>
+                <button class="tab-btn" data-tab="matrix">📊 Confidence</button>
+                <button class="tab-btn" data-tab="tta">🔁 TTA</button>
             </div>
 
-            <div class="tab-panel active" id="tab-heatmap">
-                <div class="vis-card">
-                    <h3>Gradient-weighted Class Activation Map</h3>
-                    <img id="gradcamImg" src="" alt="Grad-CAM">
-                    <p style="font-size:0.75rem;color:#555;margin-top:8px;">
-                        Red/yellow regions = where the model focuses most when making its prediction.
-                    </p>
-                </div>
+            <div class="tab-pane on" id="tab-pipeline">
+                <img class="vis-img" id="img-pipeline" src="" alt="">
+                <p class="vis-caption">Every transformation applied to your image before the model sees it: grayscale conversion, smart background inversion, CLAHE contrast enhancement, bounding-box crop, and final 28×28 resize.</p>
             </div>
-
-            <div class="tab-panel" id="tab-matrix">
-                <div class="vis-card">
-                    <h3>Prediction Confidence Per Class</h3>
-                    <img id="confMatrixImg" src="" alt="Confidence Matrix">
-                    <p style="font-size:0.75rem;color:#555;margin-top:8px;">
-                        Green = high confidence · Red = low confidence for each class.
-                    </p>
-                </div>
+            <div class="tab-pane" id="tab-gradcam">
+                <img class="vis-img" id="img-gradcam" src="" alt="">
+                <p class="vis-caption">Gradient-weighted Class Activation Map (Grad-CAM). The heatmap highlights which spatial regions of the input most strongly activated the network when predicting the winning class. Red/yellow = highest importance.</p>
+            </div>
+            <div class="tab-pane" id="tab-saliency">
+                <img class="vis-img" id="img-saliency" src="" alt="">
+                <p class="vis-caption">Vanilla gradient saliency map: the gradient of the predicted class score with respect to each input pixel. Bright regions are the most sensitive pixels — changing them would affect the prediction most.</p>
+            </div>
+            <div class="tab-pane" id="tab-matrix">
+                <img class="vis-img" id="img-matrix" src="" alt="">
+                <p class="vis-caption">Confidence heatmap and radar chart across all 10 Fashion MNIST classes. The radar shows the probability distribution; green cells indicate where the model places high confidence.</p>
+            </div>
+            <div class="tab-pane" id="tab-tta">
+                <img class="vis-img" id="img-tta" src="" alt="">
+                <p class="vis-caption">Test-Time Augmentation (TTA): 8 variants (original, horizontal flip, brightness ±10%, 4 pixel-shift directions) are each predicted independently and averaged, reducing variance and improving robustness.</p>
             </div>
         </div>
 
-        <div class="card" id="emptyVis" style="display:flex;align-items:center;justify-content:center;min-height:300px;flex-direction:column;gap:12px;">
-            <div style="font-size:3rem;">🧠</div>
-            <p style="color:#555;text-align:center;font-size:0.9rem;">Upload an image to see<br>Grad-CAM heatmap &amp; confidence matrix</p>
-        </div>
     </div>
 </div>
 
 <script>
-    const uploadArea = document.getElementById('uploadArea');
-    const fileInput = document.getElementById('fileInput');
-    const analyzeBtn = document.getElementById('analyzeBtn');
-    const loading = document.getElementById('loading');
-    const resultCard = document.getElementById('resultCard');
-    const predBadge = document.getElementById('predBadge');
-    const errorMsg = document.getElementById('errorMsg');
-    const visSection = document.getElementById('visSection');
-    const emptyVis = document.getElementById('emptyVis');
+const dropZone   = document.getElementById('dropZone');
+const fileInput  = document.getElementById('fileInput');
+const analyzeBtn = document.getElementById('analyzeBtn');
+const errMsg     = document.getElementById('errMsg');
+const loading    = document.getElementById('loading');
+const resultCard = document.getElementById('resultCard');
+const emptyVis   = document.getElementById('emptyVis');
+const visCard    = document.getElementById('visCard');
+let selectedFile = null;
 
-    let selectedFile = null;
+// ── File selection ───────────────────────────────────────────────────────────
+dropZone.addEventListener('click', () => fileInput.click());
+dropZone.addEventListener('dragover', e => { e.preventDefault(); dropZone.classList.add('drag'); });
+dropZone.addEventListener('dragleave', () => dropZone.classList.remove('drag'));
+dropZone.addEventListener('drop', e => {
+    e.preventDefault(); dropZone.classList.remove('drag');
+    if (e.dataTransfer.files[0]) select(e.dataTransfer.files[0]);
+});
+fileInput.addEventListener('change', () => { if (fileInput.files[0]) select(fileInput.files[0]); });
 
-    uploadArea.addEventListener('click', () => fileInput.click());
-    uploadArea.addEventListener('dragover', e => { e.preventDefault(); uploadArea.classList.add('dragover'); });
-    uploadArea.addEventListener('dragleave', () => uploadArea.classList.remove('dragover'));
-    uploadArea.addEventListener('drop', e => {
-        e.preventDefault();
-        uploadArea.classList.remove('dragover');
-        if (e.dataTransfer.files[0]) handleFileSelect(e.dataTransfer.files[0]);
-    });
-    fileInput.addEventListener('change', () => { if (fileInput.files[0]) handleFileSelect(fileInput.files[0]); });
+function select(f) {
+    selectedFile = f;
+    dropZone.innerHTML = `<div class="dz-icon">✅</div><p><strong>${f.name}</strong></p><p style="font-size:.72rem;color:#444;margin-top:4px;">Click to change</p>`;
+    analyzeBtn.disabled = false;
+    errMsg.style.display = 'none';
+}
 
-    function handleFileSelect(file) {
-        selectedFile = file;
-        uploadArea.innerHTML = `<div class="icon">✅</div><p><strong>${file.name}</strong></p><p style="font-size:0.75rem;color:#555;margin-top:4px;">Click to change</p>`;
+// ── Analyze ──────────────────────────────────────────────────────────────────
+analyzeBtn.addEventListener('click', async () => {
+    if (!selectedFile) return;
+
+    resultCard.style.display = 'block';
+    loading.style.display    = 'block';
+    errMsg.style.display     = 'none';
+    analyzeBtn.disabled      = true;
+    hide('predImg'); hide('predBox'); hide('top3Wrap'); hide('probSection');
+    emptyVis.style.display = 'none';
+    visCard.style.display  = 'none';
+
+    const fd = new FormData();
+    fd.append('image', selectedFile);
+
+    try {
+        const resp = await fetch('/predict', { method: 'POST', body: fd });
+        const d = await resp.json();
+
+        loading.style.display = 'none';
         analyzeBtn.disabled = false;
-        errorMsg.style.display = 'none';
-        predBadge.style.display = 'none';
+
+        if (d.error) { showErr(d.error); return; }
+
+        // Preview
+        const img = document.getElementById('predImg');
+        img.src = 'data:image/png;base64,' + d.image_b64;
+        img.style.display = 'block';
+
+        // Prediction badge
+        document.getElementById('pe').textContent = d.emoji;
+        document.getElementById('pc').textContent = d.predicted_class;
+        document.getElementById('pf').textContent = `Confidence: ${d.confidence.toFixed(1)}%`;
+        document.getElementById('meterFill').style.width = d.certainty + '%';
+        document.getElementById('meterVal').textContent = d.certainty + '%';
+        show('predBox');
+
+        // Top-3
+        const top3 = d.all_probabilities.slice(0, 3);
+        const medals = ['🥇','🥈','🥉'];
+        document.getElementById('top3').innerHTML = top3.map((it, i) => `
+            <div class="podium-item ${i===0?'p1':''}">
+                <div class="rank">${medals[i]}</div>
+                <div class="pe2">${it.emoji}</div>
+                <div class="pc2">${it.class}</div>
+                <div class="pct2" style="color:${it.color}">${it.probability.toFixed(1)}%</div>
+            </div>`).join('');
+        show('top3Wrap');
+
+        // Prob bars
+        const pb = document.getElementById('probBars');
+        pb.innerHTML = d.all_probabilities.map(it => `
+            <div class="prob-item">
+                <div class="prob-name">${it.emoji} ${it.class}</div>
+                <div class="prob-track-outer">
+                    <div class="prob-bar-fill" style="width:${Math.min(it.probability,100)}%;background:${it.color}"></div>
+                </div>
+                <div class="prob-pct">${it.probability.toFixed(1)}%</div>
+            </div>`).join('');
+        show('probSection');
+
+        // Visuals
+        setImg('img-pipeline', d.pipeline_b64);
+        setImg('img-gradcam',  d.gradcam_b64);
+        setImg('img-saliency', d.saliency_b64);
+        setImg('img-matrix',   d.conf_matrix_b64);
+        setImg('img-tta',      d.tta_b64);
+        visCard.style.display = 'block';
+
+    } catch(e) {
+        loading.style.display = 'none';
+        analyzeBtn.disabled = false;
+        showErr('Network error — please try again.');
     }
+});
 
-    analyzeBtn.addEventListener('click', async () => {
-        if (!selectedFile) return;
+// ── Tabs ─────────────────────────────────────────────────────────────────────
+document.getElementById('tabs').addEventListener('click', e => {
+    const btn = e.target.closest('.tab-btn');
+    if (!btn) return;
+    document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('on'));
+    document.querySelectorAll('.tab-pane').forEach(p => p.classList.remove('on'));
+    btn.classList.add('on');
+    document.getElementById('tab-' + btn.dataset.tab).classList.add('on');
+});
 
-        resultCard.style.display = 'block';
-        loading.style.display = 'block';
-        predBadge.style.display = 'none';
-        document.getElementById('previewImg').style.display = 'none';
-        document.getElementById('probList').innerHTML = '';
-        errorMsg.style.display = 'none';
-        analyzeBtn.disabled = true;
-        visSection.style.display = 'none';
-        emptyVis.style.display = 'flex';
-
-        const formData = new FormData();
-        formData.append('image', selectedFile);
-
+// ── Training log polling ──────────────────────────────────────────────────────
+const trainLog = document.getElementById('trainLog');
+const trainBanner = document.getElementById('trainBanner');
+if (trainLog) {
+    const poll = async () => {
         try {
-            const resp = await fetch('/predict', { method: 'POST', body: formData });
-            const data = await resp.json();
-
-            loading.style.display = 'none';
-            analyzeBtn.disabled = false;
-
-            if (data.error) {
-                errorMsg.textContent = '❌ ' + data.error;
-                errorMsg.style.display = 'block';
-                return;
+            const r = await fetch('/training_status');
+            const d = await r.json();
+            if (d.lines.length) trainLog.textContent = d.lines.join('\n');
+            if (d.done) {
+                trainBanner.innerHTML = `<span style="color:#22c55e;font-weight:700;">✅ Retraining complete! Accuracy: ${d.accuracy ? d.accuracy.toFixed(2)+'%' : 'see log'}. Reloading model…</span>`;
+                await fetch('/reload_model', { method: 'POST' });
+                setTimeout(() => location.reload(), 2000);
+            } else {
+                setTimeout(poll, 4000);
             }
+        } catch { setTimeout(poll, 6000); }
+    };
+    setTimeout(poll, 3000);
+}
 
-            const previewImg = document.getElementById('previewImg');
-            previewImg.src = 'data:image/png;base64,' + data.image_b64;
-            previewImg.style.display = 'block';
-
-            document.getElementById('predEmoji').textContent = data.emoji;
-            document.getElementById('predClass').textContent = data.predicted_class;
-            document.getElementById('predConf').textContent = `Confidence: ${data.confidence.toFixed(1)}%`;
-            predBadge.style.display = 'block';
-
-            const probList = document.getElementById('probList');
-            probList.innerHTML = '';
-            data.all_probabilities.forEach(item => {
-                const row = document.createElement('div');
-                row.className = 'prob-row';
-                row.innerHTML = `
-                    <div class="prob-label">${item.emoji} ${item.class}</div>
-                    <div class="prob-track">
-                        <div class="prob-fill" style="width:${Math.min(item.probability,100)}%;background:${item.color}"></div>
-                    </div>
-                    <div class="prob-val">${item.probability.toFixed(1)}%</div>
-                `;
-                probList.appendChild(row);
-            });
-
-            if (data.gradcam_b64) {
-                document.getElementById('gradcamImg').src = 'data:image/png;base64,' + data.gradcam_b64;
-            }
-            if (data.confusion_matrix_b64) {
-                document.getElementById('confMatrixImg').src = 'data:image/png;base64,' + data.confusion_matrix_b64;
-            }
-
-            visSection.style.display = 'block';
-            emptyVis.style.display = 'none';
-
-        } catch (err) {
-            loading.style.display = 'none';
-            analyzeBtn.disabled = false;
-            errorMsg.textContent = '❌ Network error. Please try again.';
-            errorMsg.style.display = 'block';
-        }
-    });
-
-    document.querySelectorAll('.tab-btn').forEach(btn => {
-        btn.addEventListener('click', () => {
-            document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
-            document.querySelectorAll('.tab-panel').forEach(p => p.classList.remove('active'));
-            btn.classList.add('active');
-            document.getElementById('tab-' + btn.dataset.tab).classList.add('active');
-        });
-    });
+// ── Helpers ───────────────────────────────────────────────────────────────────
+function show(id) { document.getElementById(id).style.display = ''; }
+function hide(id) { document.getElementById(id).style.display = 'none'; }
+function showErr(msg) { errMsg.textContent = '❌ ' + msg; errMsg.style.display = 'block'; }
+function setImg(id, b64) {
+    if (!b64) return;
+    document.getElementById(id).src = 'data:image/png;base64,' + b64;
+}
 </script>
 </body>
 </html>
