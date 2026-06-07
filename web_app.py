@@ -143,21 +143,49 @@ def load_model():
 
 
 def _build_grad_model():
+    """
+    Find the last layer with spatial (4-D) output to use as the Grad-CAM hook.
+    Stores the layer reference in grad_model (we re-use the global slot as a
+    plain layer object here — actual gradient capture happens via forward hook).
+    """
     global grad_model
-    # Find the last layer that produces a 4-D feature map (conv / residual)
-    last_4d = None
-    for layer in model.layers:
-        try:
-            if len(layer.output_shape) == 4:
-                last_4d = layer
-        except Exception:
-            pass
-    if last_4d:
-        grad_model = models.Model(
-            inputs=model.inputs,
-            outputs=[last_4d.output, model.output]
+    target = None
+
+    # Prefer the layer immediately before the first GlobalAveragePooling2D
+    for i, layer in enumerate(model.layers):
+        if isinstance(layer, keras.layers.GlobalAveragePooling2D):
+            if i > 0:
+                target = model.layers[i - 1]
+            break
+
+    # Fallback: last layer whose class name suggests spatial features
+    if target is None:
+        spatial_types = (
+            keras.layers.Conv2D,
+            keras.layers.DepthwiseConv2D,
+            keras.layers.SeparableConv2D,
         )
-        print(f'Grad-CAM attached to: {last_4d.name}')
+        for layer in reversed(model.layers):
+            if isinstance(layer, spatial_types):
+                target = layer
+                break
+
+    # Last resort: any subclassed layer (likely a ResidualBlock)
+    if target is None:
+        for layer in reversed(model.layers):
+            ltype = type(layer).__name__
+            if ltype not in ('InputLayer', 'Dense', 'Dropout',
+                             'Flatten', 'GlobalAveragePooling2D',
+                             'GlobalMaxPooling2D', 'BatchNormalization'):
+                target = layer
+                break
+
+    if target is None:
+        print('Grad-CAM: no suitable hook layer found')
+        return
+
+    grad_model = target          # store layer ref (not a keras.Model)
+    print(f'Grad-CAM hook layer: {target.name} ({type(target).__name__})')
 
 
 # ── Preprocessing ─────────────────────────────────────────────────────────────
@@ -247,18 +275,55 @@ def predict_with_tta(img_array: np.ndarray, n_aug: int = 8) -> np.ndarray:
 
 # ── Grad-CAM ──────────────────────────────────────────────────────────────────
 def generate_gradcam(img_array, pred_idx):
-    if grad_model is None:
+    """
+    Hook-based Grad-CAM that works with subclassed custom layers.
+    We monkey-patch the target layer's __call__ inside the tape context so
+    the captured feature map is part of the tracked computation graph.
+    """
+    if grad_model is None or model is None:
         return None
+    hook_layer = grad_model          # grad_model holds the layer reference
+    captured = []
+
+    original_call = hook_layer.__class__.__call__   # unbound method
+
+    def hooked_call(self_layer, inputs, *args, **kwargs):
+        out = original_call(self_layer, inputs, *args, **kwargs)
+        if self_layer is hook_layer:
+            captured.append(out)
+        return out
+
     try:
-        # tf.Variable is auto-watched — tape traces conv_out → score correctly
-        t = tf.Variable(tf.cast(img_array, tf.float32))
+        hook_layer.__class__.__call__ = hooked_call   # patch the class temporarily
+
+        x = tf.Variable(img_array.astype('float32'))
         with tf.GradientTape() as tape:
-            conv_out, preds = grad_model(t, training=False)
+            preds = model(x, training=False)
             score = preds[:, pred_idx]
+
+        hook_layer.__class__.__call__ = original_call  # restore immediately
+
+        if not captured:
+            print('Grad-CAM: hook did not capture any output')
+            return None
+
+        conv_out = captured[0]
+        if conv_out.ndim != 4:
+            print(f'Grad-CAM: captured tensor is {conv_out.ndim}D, expected 4D')
+            return None
+
         grads = tape.gradient(score, conv_out)
         if grads is None:
-            print('Grad-CAM: gradients are None')
-            return None
+            print('Grad-CAM: gradients are None — trying input-gradient fallback')
+            # Fallback: use gradient w.r.t input as a simple saliency heatmap
+            grads_x = tape.gradient(score, x)
+            if grads_x is None:
+                return None
+            heatmap = np.abs(grads_x.numpy()[0, :, :, 0])
+            if heatmap.max() > 0:
+                heatmap /= heatmap.max()
+            return heatmap
+
         pooled = tf.reduce_mean(grads, axis=(0, 1, 2)).numpy()
         cam = conv_out[0].numpy().copy()
         for i in range(pooled.shape[-1]):
@@ -267,7 +332,9 @@ def generate_gradcam(img_array, pred_idx):
         if heatmap.max() > 0:
             heatmap /= heatmap.max()
         return heatmap
+
     except Exception as e:
+        hook_layer.__class__.__call__ = original_call  # always restore
         print(f'Grad-CAM error: {e}')
         import traceback; traceback.print_exc()
         return None
