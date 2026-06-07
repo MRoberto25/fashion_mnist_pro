@@ -247,24 +247,12 @@ body {
 <div class="header">
     <h1 class="font-bold text-center">Fashion AI — Deep Visual Analysis</h1>
     <p>DeepResNet + SE Attention · Test-Time Augmentation · Grad-CAM · Saliency · Radar</p>
-    {% if training_in_progress %}
-    <span class="badge training">⚙️ Retraining for higher accuracy…</span>
-    {% elif model_loaded %}
+    {% if model_loaded %}
     <span class="badge ready">✅ Model ready</span>
     {% else %}
     <span class="badge notready">⚠️ Model not found</span>
     {% endif %}
 </div>
-
-{% if training_in_progress %}
-<div class="train-banner" id="trainBanner" style="max-width:1180px;margin:0 auto 18px;">
-    <div class="spinner-sm"></div>
-    <div style="flex:1;">
-        <strong>Training in progress</strong> — improved DeepResNet + SE Attention model is being built for higher accuracy.
-        <div class="train-log" id="trainLog">Loading training log…</div>
-    </div>
-</div>
-{% endif %}
 
 <div class="main-grid">
 
@@ -471,27 +459,6 @@ document.getElementById('tabs').addEventListener('click', e => {
     btn.classList.add('on');
     document.getElementById('tab-' + btn.dataset.tab).classList.add('on');
 });
-
-// ── Training log polling ──────────────────────────────────────────────────────
-const trainLog = document.getElementById('trainLog');
-const trainBanner = document.getElementById('trainBanner');
-if (trainLog) {
-    const poll = async () => {
-        try {
-            const r = await fetch('/training_status');
-            const d = await r.json();
-            if (d.lines.length) trainLog.textContent = d.lines.join('\n');
-            if (d.done) {
-                trainBanner.innerHTML = `<span style="color:#22c55e;font-weight:700;">✅ Retraining complete! Accuracy: ${d.accuracy ? d.accuracy.toFixed(2)+'%' : 'see log'}. Reloading model…</span>`;
-                await fetch('/reload_model', { method: 'POST' });
-                setTimeout(() => location.reload(), 2000);
-            } else {
-                setTimeout(poll, 4000);
-            }
-        } catch { setTimeout(poll, 6000); }
-    };
-    setTimeout(poll, 3000);
-}
 
 // ── Helpers ───────────────────────────────────────────────────────────────────
 function show(id) { document.getElementById(id).style.display = ''; }

@@ -250,22 +250,26 @@ def generate_gradcam(img_array, pred_idx):
     if grad_model is None:
         return None
     try:
-        t = tf.cast(img_array, tf.float32)
+        # tf.Variable is auto-watched — tape traces conv_out → score correctly
+        t = tf.Variable(tf.cast(img_array, tf.float32))
         with tf.GradientTape() as tape:
-            tape.watch(t)
-            conv_out, preds = grad_model(t)
+            conv_out, preds = grad_model(t, training=False)
             score = preds[:, pred_idx]
         grads = tape.gradient(score, conv_out)
-        pooled = tf.reduce_mean(grads, axis=(0,1,2)).numpy()
-        cam = conv_out[0].numpy()
+        if grads is None:
+            print('Grad-CAM: gradients are None')
+            return None
+        pooled = tf.reduce_mean(grads, axis=(0, 1, 2)).numpy()
+        cam = conv_out[0].numpy().copy()
         for i in range(pooled.shape[-1]):
-            cam[:,:,i] *= pooled[i]
+            cam[:, :, i] *= pooled[i]
         heatmap = np.maximum(np.mean(cam, axis=-1), 0)
         if heatmap.max() > 0:
             heatmap /= heatmap.max()
         return heatmap
     except Exception as e:
         print(f'Grad-CAM error: {e}')
+        import traceback; traceback.print_exc()
         return None
 
 
